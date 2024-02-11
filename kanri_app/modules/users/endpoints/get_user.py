@@ -12,24 +12,25 @@ logger = get_logger(__name__)
 
 router = APIRouter()
 
+
 @router.get(path="/users/{user_id}", 
             summary="Obtiene Usuario", 
             description="Obtiene información del usuario indicado por su ID.",
             response_model=CreateGetOrUpdateUserResponse
             )
 async def get_users(user_id: str = Path(..., description="ID del usuario a buscar."), 
-                    db = Depends(get_db), 
+                    db=Depends(get_db),
                     current_user: User = Depends(get_current_active_user)):
     
     try:
         user = db.query(User).filter(User.usuario_id == user_id).first()
         if not user:
             return CreateGetOrUpdateUserResponse(mensaje="Usuario no existe en nuestros registros",
-                                                estado="Error",
-                                                codigo=404)            
+                                                 estado="Error",
+                                                 codigo=404)
         else:
             return CreateGetOrUpdateUserResponse(mensaje="Usuario ha sido encontrado con éxito",
-                                                usuario= user)
+                                                 usuario=user)
     except SQLAlchemyError as e:
         logger.error(f"Error al obtener usuario: {e}")
         raise HTTPException(
