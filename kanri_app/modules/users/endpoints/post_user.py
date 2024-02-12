@@ -46,7 +46,7 @@ def create_user(db: Session, user: UserCreate) -> UserRead:
             correo = user.correo,
             avatar = user.avatar,
             departamento = user.departamento,
-            cambiar_clave = EstadoYesOrNo.NO.value,
+            cambiar_clave = EstadoYesOrNo.NO.value,  #Se deja en NO, por ahora hasta implementar correo y vista
             fecha_creacion = datetime.now(),
             ingresos_fallidos = 0,
             estado_usuario = EstadoUsuario.HABILITADO.value,
