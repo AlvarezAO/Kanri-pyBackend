@@ -4,6 +4,7 @@ from sqlalchemy import create_engine
 import json
 
 
+#TODO Usar AWS SECRET mas adelante, por ahora en desarrollo no es necesario
 def get_secret():
     secret_name = "rds!db-09ba5175-7829-4458-896b-d4b2926463aa"
     region_name = "us-east-1"
@@ -24,10 +25,15 @@ def get_secret():
     return secret
 
 
-SECRET = get_secret()
-HOST_RDS = "kanri-database.clrflhflhrpj.us-east-1.rds.amazonaws.com"
+'''SECRET = get_secret()
+HOST_RDS = "kanri-database.cxmiiiegiwuu.us-east-1.rds.amazonaws.com"
 USER_RDS = SECRET['username']
 PASS_RDS = SECRET['password']
+DB_NAME_RDS = "kanri_desarrollo"'''
+
+HOST_RDS = "kanri-database.cxmiiiegiwuu.us-east-1.rds.amazonaws.com"
+USER_RDS = "kanri_admin"
+PASS_RDS = "k4nr1_2024"
 DB_NAME_RDS = "kanri_desarrollo"
 
 DATABASE_URL = f"mysql+pymysql://{USER_RDS}:{PASS_RDS}@{HOST_RDS}/{DB_NAME_RDS}?charset=utf8mb4"
@@ -36,6 +42,3 @@ DATABASE_URL = f"mysql+pymysql://{USER_RDS}:{PASS_RDS}@{HOST_RDS}/{DB_NAME_RDS}?
 # Crear el engine de SQLAlchemy
 engine = create_engine(DATABASE_URL)
 
-
-if __name__ == "__main__":
-    print(get_secret())
