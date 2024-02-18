@@ -6,7 +6,7 @@ phases:
       python: 3.11
     commands:
       - echo "Instalando herramientas necesarias..."
-      - yum update -y && yum install -y zip
+      - apt-get update && apt-get install -y zip
       - echo "El directorio actual es $CODEBUILD_SRC_DIR"
       -
       #- DEPENDENCIES="dependencies/python/lib/python3.11/site-packages"
