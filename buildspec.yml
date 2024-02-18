@@ -12,10 +12,7 @@ phases:
 
   pre_build:
     commands:
-      - echo "Instalando dependencias de Python..."
-      - pip install -r requirements.txt -t ./dependencies/
-      - echo "Empaquetando dependencias para el layer..."
-      - zip -r kanri_layer.zip ./dependencies/
+      - aws s3 cp s3://kanri-project-files/layer_zip/kanri_layer.zip kanri_layer.zip
       # Intenta descargar el hash actual. Si no existe, se manejará el error.
       - >
        CURRENT_HASH=$(aws s3 cp s3://kanri-project-files/hash_layer/current-hash.txt - 2>/dev/null) || echo "Archivo de hash no encontrado."
