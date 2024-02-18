@@ -5,17 +5,62 @@ phases:
     runtime-versions:
       python: 3.11
     commands:
-      - pwd
-      - ls -l
-      - mkdir dependencias
-      - ls -l
+      - echo "Instalando herramientas necesarias..."
+      - apt-get update && apt-get install -y zip
+      - echo "Instalando dependencias de Python..."
+      - echo "El directorio actual es $CODEBUILD_SRC_DIR"
+      -
+      #- DEPENDENCIES="dependencies/python/lib/python3.11/site-packages"
+      #- mkdir -p $DEPENDENCIES
+      #- echo "Instalar las dependencias en la carpeta 'dependencies'"
+      #- pip install -r requirements.txt --target $DEPENDENCIES
+
+      #  echo "Crear el archivo zip de las dependencias"
+      #  cd dependencies
+      #  echo $RUTA
+      #  zip -r $RUTA/layer.zip .
+
+      #  cd ..
+      #- pip install -r requirements.txt -t ./python
+
   pre_build:
     commands:
-      - echo "Pre Build"
+      #- echo "Empaquetando dependencias para el layer..."
+      #- zip -r dependencies_layer.zip ./python
+      # Opcional: Compara el hash del layer actual con el nuevo para decidir si actualizar
+      #- CURRENT_HASH=$(aws s3 cp s3://my-bucket/path/to/current-hash.txt -)
+      #- NEW_HASH=$(sha256sum dependencies_layer.zip | awk '{print $1}')
+      #- |
+      #  if [ "$CURRENT_HASH" == "$NEW_HASH" ]; then
+      #    echo "El layer de dependencias no ha cambiado."
+      #    SKIP_LAYER_UPDATE="true"
+      #  fi
+
   build:
     commands:
-      - echo "Build"
+      #- echo "Empaquetando código de la función Lambda..."
+      #- zip -r function.zip ./path/to/your/lambda/code
+      # Asegúrate de ajustar la ruta anterior a la ubicación real de tu código Lambda
+
   post_build:
     commands:
-      - echo "Post Build"
+      #- |
+      #  if [ "$SKIP_LAYER_UPDATE" != "true" ]; then
+      #    echo "Actualizando layer de dependencias en Lambda..."
+      #    # Asume que ya tienes un layer creado y solo necesitas actualizarlo
+      #    aws lambda publish-layer-version --layer-name "nombre-de-tu-layer" --zip-file fileb://dependencies_layer.zip --compatible-runtimes python3.11
+      #    # Opcional: Actualiza el hash almacenado en S3
+      #    echo $NEW_HASH | aws s3 cp - s3://my-bucket/path/to/current-hash.txt
+      #  fi
+      - echo "Actualizando función Lambda con el nuevo código..."
+      #- aws lambda update-function-code --function-name mi-funcion-lambda --zip-file fileb://function.zip
+      - echo "Publicando nueva versión de la función Lambda..."
+      #- NEW_VERSION=$(aws lambda publish-version --function-name mi-funcion-lambda --query 'Version' --output text)
+      - echo "Actualizando el alias con la nueva versión..."
+      #- aws lambda update-alias --function-name mi-funcion-lambda --name ALIAS_NAME --function-version $NEW_VERSION
+      # Reemplaza ALIAS_NAME con el alias que deseas actualizar, por ejemplo, "develop" o "production"
 
+artifacts:
+  files:
+    #- function.zip
+    #- dependencies.zip
