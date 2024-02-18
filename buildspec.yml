@@ -17,6 +17,7 @@ phases:
       - >
        CURRENT_HASH=$(aws s3 cp s3://kanri-project-files/hash_layer/current-hash.txt - 2>/dev/null) || echo "Archivo de hash no encontrado."
       - NEW_HASH=$(sha256sum kanri_layer.zip | awk '{print $1}')
+      - echo "---------------------Version Actual $CURRENT_HASH | Version Nueva $NEW_HASH---------------------------"
       - |
         if [ -z "$CURRENT_HASH" ] || [ "$CURRENT_HASH" != "$NEW_HASH" ]; then
         echo "El layer de dependencias ha cambiado o es la primera vez que se sube."
