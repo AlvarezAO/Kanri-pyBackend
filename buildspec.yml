@@ -8,38 +8,17 @@ phases:
       - echo "Instalando herramientas necesarias..."
       - apt-get update && apt-get install -y zip
       - echo "El directorio actual es $CODEBUILD_SRC_DIR"
-      -
-      #- DEPENDENCIES="dependencies/python/lib/python3.11/site-packages"
-      #- mkdir -p $DEPENDENCIES
-      #- echo "Instalar las dependencias en la carpeta 'dependencies'"
-      #- pip install -r requirements.txt --target $DEPENDENCIES
-
-      #  echo "Crear el archivo zip de las dependencias"
-      #  cd dependencies
-      #  echo $RUTA
-      #  zip -r $RUTA/layer.zip .
-
-      #  cd ..
-      #- pip install -r requirements.txt -t ./python
+      - echo "Creando deploy en el ambiente $ALIAS_NAME"
 
   pre_build:
     commands:
-      #- echo "Empaquetando dependencias para el layer..."
-      #- zip -r dependencies_layer.zip ./python
-      # Opcional: Compara el hash del layer actual con el nuevo para decidir si actualizar
-      #- CURRENT_HASH=$(aws s3 cp s3://my-bucket/path/to/current-hash.txt -)
-      #- NEW_HASH=$(sha256sum dependencies_layer.zip | awk '{print $1}')
-      #- |
-      #  if [ "$CURRENT_HASH" == "$NEW_HASH" ]; then
-      #    echo "El layer de dependencias no ha cambiado."
-      #    SKIP_LAYER_UPDATE="true"
-      #  fi
+      - echo "Instalando dependencias de Python..."
+      - pip install -r requirements.txt -t ./dependencies/
 
   build:
     commands:
-      #- echo "Empaquetando código de la función Lambda..."
-      #- zip -r function.zip ./path/to/your/lambda/code
-      # Asegúrate de ajustar la ruta anterior a la ubicación real de tu código Lambda
+      - echo "Empaquetando código de la función Lambda..."
+      - zip -r dependencies_layer.zip ./dependencies/
 
   post_build:
     commands:
