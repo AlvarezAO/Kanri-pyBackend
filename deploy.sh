@@ -1,6 +1,8 @@
 #!/bin/bash
 HORA=$(date '+%Y-%m-%d %H:%M:%S')
 ALIAS_NAME=$1
+RUTA_DEPENDENCIAS_REMOTAS="/mnt/c/Users/alvar/AppData/Local/JetBrains/PyCharm2023.2/remote_sources/-1312678265/1428128763"
+RAIZ_PROYECTO="/home/alvaro/proyectos/Kanri-pyBackend"
 
 if [ -z "$ALIAS_NAME" ]; then
   echo "Ambiente no especificado."
@@ -9,23 +11,23 @@ fi
 
 echo "Iniciando despliegue a Lambda con alias: $ALIAS_NAME a las: $HORA"
 
+CURRENT_HASH=$(aws s3 cp s3://kanri-project-files/hash_layer/current-hash.txt - 2>/dev/null) || echo "Archivo de hash no encontrado."
+echo "Hash Actual: $CURRENT_HASH"
+#Revisa todas las dependencias del proyecto y genera un hash basadas en ellas.
+NEW_HASH=$(find $RUTA_DEPENDENCIAS_REMOTAS -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | awk '{print $1}')
+echo "Nuevo Hash: $NEW_HASH"
 
-echo "Instalando dependencias de Python..."
-pip install -r requirements.txt -t ./dependencies/
-echo "Empaquetando dependencias para el layer..."
-zip -r kanri_layer.zip ./dependencies/
-echo "Cargando layer en S3..."
-aws s3 cp kanri_layer.zip s3://kanri-project-files/layer_zip/kanri_layer.zip
-echo "Layer termino de cargar en S3..."
-echo "Eliminando carpeta dependencies del local a las: $(date '+%Y-%m-%d %H:%M:%S')"
-rm -rf ./dependencies/
-rm kanri_layer.zip
-
-#export AWS_PROFILE=alvaro
-# Aquí podrías agregar comandos para empaquetar tu código, si es necesario
-
-# Ejecutar el comando de AWS CodeBuild, pasando el alias como una variable de entorno
-#aws codebuild list-projects
+if [ -z "$CURRENT_HASH" ] || [ "$CURRENT_HASH" != "$NEW_HASH" ]; then
+  echo "El layer de dependencias ha cambiado o es la primera vez que se sube."
+  echo $NEW_HASH | aws s3 cp - s3://kanri-project-files/hash_layer/current-hash.txt #Sube el nuevo hash a S3
+  echo "Empaquetando dependencias para el layer..."
+  zip -r $RAIZ_PROYECTO/kanri_layer.zip $RUTA_DEPENDENCIAS_REMOTAS
+  echo "Subiendo el nuevo layer a S3..."
+  aws s3 cp $RAIZ_PROYECTO/kanri_layer.zip s3://kanri-project-files/layer_zip/kanri_layer.zip
+  echo "Layer cargado correctamente a S3 | Eliminando zip del local"
+  rm kanri_layer.zip
+  else
+  echo "El layer de dependencias no ha cambiado."
+  fi
 
 aws codebuild start-build --project-name kanri_fastapi_build --environment-variables-override name=ALIAS_NAME,value=$ALIAS_NAME,type=PLAINTEXT
-#aws codebuild start-build --project-name kanri_fastapi_build --environment-variables-override name=ALIAS_NAME,value=$ALIAS_NAME,type=PLAINTEXT

@@ -9,26 +9,10 @@ phases:
       - apt-get update && apt-get install -y zip
       - echo "El directorio actual es $CODEBUILD_SRC_DIR"
       - echo "Creando deploy en el ambiente $ALIAS_NAME"
+      - echo "$RUTA_DEPENDENCIAS_REMOTAS"
 
   pre_build:
     commands:
-      - aws s3 cp s3://kanri-project-files/layer_zip/kanri_layer.zip kanri_layer.zip
-      # Intenta descargar el hash actual. Si no existe, se manejará el error.
-      - >
-       CURRENT_HASH=$(aws s3 cp s3://kanri-project-files/hash_layer/current-hash.txt - 2>/dev/null) || echo "Archivo de hash no encontrado."
-      - NEW_HASH=$(sha256sum kanri_layer.zip | awk '{print $1}')
-      - echo "---------------------Version Actual $CURRENT_HASH | Version Nueva $NEW_HASH---------------------------"
-      - |
-        if [ -z "$CURRENT_HASH" ] || [ "$CURRENT_HASH" != "$NEW_HASH" ]; then
-        echo "El layer de dependencias ha cambiado o es la primera vez que se sube."
-        SKIP_LAYER_UPDATE="false"
-        # Sube el nuevo hash a S3
-        echo $NEW_HASH | aws s3 cp - s3://kanri-project-files/hash_layer/current-hash.txt
-        # Aquí podrías añadir el comando para subir dependencies_layer.zip a S3 y actualizar el layer en Lambda
-        else
-        echo "El layer de dependencias no ha cambiado."
-        SKIP_LAYER_UPDATE="true"
-        fi
 
   build:
     commands:
@@ -55,4 +39,4 @@ phases:
 artifacts:
   files:
     #- function.zip
-    - kanri_layer.zip
+    #- kanri_layer.zip
