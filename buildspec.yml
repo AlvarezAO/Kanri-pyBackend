@@ -14,11 +14,27 @@ phases:
     commands:
       - echo "Instalando dependencias de Python..."
       - pip install -r requirements.txt -t ./dependencies/
+      - echo "Empaquetando dependencias para el layer..."
+      - zip -r kanri_layer.zip ./dependencies/
+      # Intenta descargar el hash actual. Si no existe, se manejará el error.
+      - >
+       CURRENT_HASH=$(aws s3 cp s3://kanri-project-files/hash_layer/current-hash.txt - 2>/dev/null) || echo "Archivo de hash no encontrado."
+      - NEW_HASH=$(sha256sum kanri_layer.zip | awk '{print $1}')
+      - |
+        if [ -z "$CURRENT_HASH" ] || [ "$CURRENT_HASH" != "$NEW_HASH" ]; then
+        echo "El layer de dependencias ha cambiado o es la primera vez que se sube."
+        SKIP_LAYER_UPDATE="false"
+        # Sube el nuevo hash a S3
+        echo $NEW_HASH | aws s3 cp - s3://kanri-project-files/hash_layer/current-hash.txt
+        # Aquí podrías añadir el comando para subir dependencies_layer.zip a S3 y actualizar el layer en Lambda
+        else
+        echo "El layer de dependencias no ha cambiado."
+        SKIP_LAYER_UPDATE="true"
+        fi
 
   build:
     commands:
-      - echo "Empaquetando código de la función Lambda..."
-      - zip -r dependencies_layer.zip ./dependencies/
+      - echo "build process"
 
   post_build:
     commands:
@@ -41,4 +57,4 @@ phases:
 artifacts:
   files:
     #- function.zip
-    #- dependencies.zip
+    - kanri_layer.zip
