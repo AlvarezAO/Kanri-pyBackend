@@ -22,15 +22,15 @@ phases:
       - echo "build process"
       - if [ "$LAYER_UPDATE" = "true" ]; then
           echo "Actualizando layer...";
-          LAYER_VERSION_ARN=$(aws lambda publish-layer-version --layer-name "kanri_layer" --description "Layer para el proyecto Kanri" --content S3Bucket=kanri-project-files,S3Key=layer_zip/kanri_layer.zip --compatible-runtimes python3.11 --query 'LayerVersionArn' --output text)
-          echo "Layer ARN $LAYER_VERSION_ARN"
+          LAYER_VERSION_ARN=$(aws lambda publish-layer-version --layer-name "kanri_layer" --description "Layer para el proyecto Kanri" --content S3Bucket=kanri-project-files,S3Key=layer_zip/kanri_layer.zip --compatible-runtimes python3.11 --query 'LayerVersionArn' --output text);
+          echo "Layer ARN $LAYER_VERSION_ARN";
         fi
       - echo "Cargabdo lambda"
       - aws lambda update-function-code --function-name "kanri_lambda" --s3-bucket kanri-project-files --s3-key kanri_code/kanri_app_code.zip
       - |
         if [ ! -z "$LAYER_VERSION_ARN" ]; then
           echo "Asociando layer a la función Lambda...";
-          aws lambda update-function-configuration --function-name "kanri_lambda" --layers $LAYER_VERSION_ARN
+          aws lambda update-function-configuration --function-name "kanri_lambda" --layers $LAYER_VERSION_ARN;
         fi
 
 
