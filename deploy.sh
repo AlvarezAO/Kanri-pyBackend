@@ -26,8 +26,10 @@ if [ -z "$CURRENT_HASH" ] || [ "$CURRENT_HASH" != "$NEW_HASH" ]; then
   aws s3 cp $RAIZ_PROYECTO/kanri_layer.zip s3://kanri-project-files/layer_zip/kanri_layer.zip
   echo "Layer cargado correctamente a S3 | Eliminando zip del local"
   rm kanri_layer.zip
+  LAYER_UPDATE="true"
   else
   echo "El layer de dependencias no ha cambiado."
+  LAYER_UPDATE="false"
   fi
 
-aws codebuild start-build --project-name kanri_fastapi_build --environment-variables-override name=ALIAS_NAME,value=$ALIAS_NAME,type=PLAINTEXT
+aws codebuild start-build --project-name kanri_fastapi_build --environment-variables-override name=ALIAS_NAME,value=$ALIAS_NAME,type=PLAINTEXT name=LAYER_UPDATE,value=$LAYER_UPDATE,type=PLAINTEXT
