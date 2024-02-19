@@ -12,14 +12,15 @@ phases:
   pre_build:
     commands:
       - echo "Generando Zip con proyecto"
-      - zip -r kanri_app_code.zip $CODEBUILD_SRC_DIR/kanri_app
+      - zip -r kanri_app_code.zip ./kanri_app
       - echo "Cargando proyecto a S3"
-      - aws s3 cp $CODEBUILD_SRC_DIR/kanri_app_code.zip s3://kanri-project-files/kanri_code/kanri_app_code.zip
+      - aws s3 cp ./kanri_app_code.zip s3://kanri-project-files/kanri_code/kanri_app_code.zip
 
 
   build:
     commands:
       - echo "build process"
+      - echo "Actualizar Lambda $LAYER_UPDATE"
       - if [ "$LAYER_UPDATE" = "true" ]; then
           echo "Actualizando layer...";
           LAYER_VERSION_ARN=$(aws lambda publish-layer-version --layer-name "kanri_layer" --description "Layer para el proyecto Kanri" --content S3Bucket=kanri-project-files,S3Key=layer_zip/kanri_layer.zip --compatible-runtimes python3.11 --query 'LayerVersionArn' --output text);
@@ -27,10 +28,18 @@ phases:
         fi
       - echo "Cargabdo lambda"
       - aws lambda update-function-code --function-name "kanri_lambda" --s3-bucket kanri-project-files --s3-key kanri_code/kanri_app_code.zip
+      - NEW_VERSION=$(aws lambda publish-version --function-name "kanri_lambda" --query 'Version' --output text)
+      - echo "Nueva versión de Lambda publicada $NEW_VERSION"
       - |
         if [ ! -z "$LAYER_VERSION_ARN" ]; then
           echo "Asociando layer a la función Lambda...";
           aws lambda update-function-configuration --function-name "kanri_lambda" --layers $LAYER_VERSION_ARN;
+        fi
+      - |
+        if [ ! -z "$NEW_VERSION" ]; then
+          echo "Actualizando alias...";
+          aws lambda update-alias --function-name "kanri_lambda" --name "$ALIAS_NAME" --function-version "$NEW_VERSION";
+          echo "Alias $ALIAS_NAME actualizado para apuntar a la versión $NEW_VERSION";
         fi
 
 
