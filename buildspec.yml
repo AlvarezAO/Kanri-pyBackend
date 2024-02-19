@@ -15,7 +15,7 @@ phases:
       - zip -r kanri_app_code.zip ./kanri_app
       - echo "Cargando proyecto a S3"
       - aws s3 cp ./kanri_app_code.zip s3://kanri-project-files/kanri_code/kanri_app_code.zip
-
+      - aws lambda update-function-code --function-name "kanri_lambda" --s3-bucket kanri-project-files --s3-key kanri_code/kanri_app_code.zip
 
   build:
     commands:
@@ -27,7 +27,7 @@ phases:
           echo "Layer ARN $LAYER_VERSION_ARN";
         fi
       - echo "Cargabdo lambda"
-      - aws lambda update-function-code --function-name "kanri_lambda" --s3-bucket kanri-project-files --s3-key kanri_code/kanri_app_code.zip
+      - sleep 5
       - NEW_VERSION=$(aws lambda publish-version --function-name "kanri_lambda" --query 'Version' --output text)
       - echo "Nueva versión de Lambda publicada $NEW_VERSION"
       - |
