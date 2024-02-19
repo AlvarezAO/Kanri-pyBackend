@@ -7,7 +7,6 @@ phases:
     commands:
       - echo "Instalando herramientas necesarias..."
       - apt-get update && apt-get install -y zip
-      - python -m pip install --upgrade pip
       - echo "El directorio actual es $CODEBUILD_SRC_DIR"
 
   pre_build:
@@ -25,7 +24,7 @@ phases:
           echo "Actualizando layer...";
           LAYER_VERSION_ARN=$(aws lambda publish-layer-version --layer-name "kanri_layer" --description "Layer para el proyecto Kanri" --content S3Bucket=kanri-project-files,S3Key=layer_zip/kanri_layer.zip --compatible-runtimes python3.11 --query 'LayerVersionArn' --output text)
           echo "Layer ARN $LAYER_VERSION_ARN"
-          fi
+        fi
       - echo "Cargabdo lambda"
       - aws lambda update-function-code --function-name "kanri_lambda" --s3-bucket kanri-project-files --s3-key kanri_code/kanri_app_code.zip
       - |
